@@ -26,11 +26,13 @@
     th {
       background-color: #161b22;
     }
+    .long { color: #3fb950; font-weight: bold; }
+    .short { color: #f85149; font-weight: bold; }
   </style>
 </head>
 <body>
   <h1>📊 Mi Dashboard - Bulls & Bears IA</h1>
-  <table>
+  <table id="tabla-senales">
     <thead>
       <tr>
         <th>Par</th>
@@ -41,16 +43,36 @@
         <th>Estado</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>BTCUSDT</td>
-        <td>LONG</td>
-        <td>65000</td>
-        <td>64000</td>
-        <td>67000</td>
-        <td>Abierto</td>
-      </tr>
+    <tbody id="cuerpo-tabla">
+      <tr><td colspan="6">Cargando señales...</td></tr>
     </tbody>
   </table>
+
+  <script>
+    const URL_DATOS = "https://raw.githubusercontent.com/bztoken57-web/bot-datos/main/senales.json";
+
+    fetch(URL_DATOS)
+      .then(res => res.json())
+      .then(datos => {
+        const cuerpo = document.getElementById("cuerpo-tabla");
+        cuerpo.innerHTML = "";
+        datos.forEach(s => {
+          const clase = s.tipo === "LONG" ? "long" : "short";
+          cuerpo.innerHTML += `
+            <tr>
+              <td>${s.par}</td>
+              <td class="${clase}">${s.tipo}</td>
+              <td>${s.entrada}</td>
+              <td>${s.sl}</td>
+              <td>${s.tp}</td>
+              <td>${s.estado}</td>
+            </tr>`;
+        });
+      })
+      .catch(err => {
+        document.getElementById("cuerpo-tabla").innerHTML =
+          "<tr><td colspan='6'>Error cargando datos</td></tr>";
+      });
+  </script>
 </body>
 </html>

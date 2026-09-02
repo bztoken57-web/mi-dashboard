@@ -3,37 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bulls & Bears IA - Dashboard</title>
+<title>B&B AI - Dashboard</title>
 <style>
   body {
     background-color: #0d1117;
     color: #e6edf3;
     font-family: Arial, sans-serif;
     padding: 15px;
-    max-width: 900px;
+    max-width: 950px;
     margin: 0 auto;
   }
   h1 { color: #58a6ff; font-size: 1.4em; }
-  h2 { margin-top: 30px; padding: 8px 12px; border-radius: 6px; }
+  h2 { margin-top: 30px; padding: 8px 12px; border-radius: 6px; font-size: 1.1em; }
   h2.long { background-color: #123321; color: #3fb950; }
   h2.short { background-color: #3a1a1a; color: #f85149; }
+  h3.token-title {
+    margin: 18px 0 4px 0;
+    font-size: 1em;
+    color: #c9d1d9;
+    display: flex;
+    justify-content: space-between;
+    background: #161b22;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
   .capital-box {
-    background-color: #161b22;
+    background: linear-gradient(135deg, #161b22, #1c2333);
     border: 1px solid #30363d;
     border-radius: 10px;
-    padding: 15px;
+    padding: 18px;
     margin: 15px 0;
     text-align: center;
   }
-  .capital-box .monto { font-size: 1.8em; font-weight: bold; }
+  .capital-box .label { font-size: 0.85em; color: #8b949e; }
+  .capital-box .monto { font-size: 2em; font-weight: bold; margin-top: 5px; }
   .positivo { color: #3fb950; }
   .negativo { color: #f85149; }
-  .aviso { font-size: 0.75em; color: #8b949e; margin-top: 5px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
-  th, td { border: 1px solid #30363d; padding: 8px; text-align: center; }
+  .aviso { font-size: 0.75em; color: #8b949e; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.82em; }
+  th, td { border: 1px solid #30363d; padding: 6px; text-align: center; }
   th { background-color: #161b22; }
   .tp { color: #3fb950; font-weight: bold; }
   .sl { color: #f85149; font-weight: bold; }
+  .abierto { color: #d29922; font-weight: bold; }
   footer {
     margin-top: 40px;
     padding: 15px;
@@ -43,37 +55,28 @@
     font-size: 0.9em;
   }
   footer a { color: #58a6ff; text-decoration: none; }
+  .vacio { color: #8b949e; padding: 10px; text-align: center; }
 </style>
 </head>
 <body>
-  <h1>📊 Bulls & Bears IA - Dashboard</h1>
+  <h1>📊 B&B AI - Dashboard</h1>
 
   <div class="capital-box">
-    <div>💰 Capital simulado ($100 por señal)</div>
+    <div class="label">Capital invertido: $100 por señal (sin apalancamiento)</div>
     <div class="monto" id="capital-total">Cargando...</div>
     <div class="aviso">Simulación educativa — no representa dinero real</div>
   </div>
 
   <h2 class="long">🟢 LONGS</h2>
-  <table id="tabla-long">
-    <thead>
-      <tr><th>Activo</th><th># Señales</th><th>✅ TP</th><th>❌ SL</th><th>Abiertas</th></tr>
-    </thead>
-    <tbody><tr><td colspan="5">Cargando...</td></tr></tbody>
-  </table>
+  <div id="contenedor-long"><div class="vacio">Cargando...</div></div>
 
   <h2 class="short">🔴 SHORTS</h2>
-  <table id="tabla-short">
-    <thead>
-      <tr><th>Activo</th><th># Señales</th><th>✅ TP</th><th>❌ SL</th><th>Abiertas</th></tr>
-    </thead>
-    <tbody><tr><td colspan="5">Cargando...</td></tr></tbody>
-  </table>
+  <div id="contenedor-short"><div class="vacio">Cargando...</div></div>
 
   <footer>
     📩 <b>Contáctanos</b><br>
-    Telegram: <a href="https://t.me/tu_canal" target="_blank">@tu_canal</a><br>
-    Correo: <a href="mailto:tucorreo@ejemplo.com">tucorreo@ejemplo.com</a>
+    Telegram: <a href="https://t.me/BullsandBearsIA" target="_blank">@BullsandBearsIA</a><br>
+    Correo: <a href="mailto:botsignaltg@gmail.com">botsignaltg@gmail.com</a>
   </footer>
 
   <script>
@@ -83,44 +86,93 @@
     fetch(URL_DATOS)
       .then(res => res.json())
       .then(datos => {
-        let capital = 0;
+        let capitalGlobal = 0;
 
-        function procesar(tipo, tbodyId) {
+        function renderTipo(tipo, contenedorId) {
           const grupos = {};
           datos.filter(s => s.tipo === tipo).forEach(s => {
-            if (!grupos[s.par]) grupos[s.par] = { total: 0, tp: 0, sl: 0, abiertas: 0 };
-            grupos[s.par].total++;
-            if (s.estado === "Abierto") {
-              grupos[s.par].abiertas++;
-            } else if (s.resultado === "TP") {
-              grupos[s.par].tp++;
-              capital += MONTO_POR_SENAL * (s.return_pct / 100);
-            } else if (s.resultado === "SL") {
-              grupos[s.par].sl++;
-              capital += MONTO_POR_SENAL * (s.return_pct / 100);
-            }
+            if (!grupos[s.par]) grupos[s.par] = [];
+            grupos[s.par].push(s);
           });
 
-          const tbody = document.querySelector(`#${tbodyId} tbody`);
+          const contenedor = document.getElementById(contenedorId);
           const pares = Object.keys(grupos);
+
           if (pares.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='5'>Sin señales todavía</td></tr>";
+            contenedor.innerHTML = "<div class='vacio'>Sin señales todavía</div>";
             return;
           }
-          tbody.innerHTML = "";
+
+          let html = "";
           pares.forEach(par => {
-            const g = grupos[par];
-            tbody.innerHTML += `<tr><td>${par}</td><td>${g.total}</td><td class="tp">${g.tp}</td><td class="sl">${g.sl}</td><td>${g.abiertas}</td></tr>`;
+            const lista = grupos[par];
+            let gananciaToken = 0;
+
+            let filas = "";
+            lista.forEach(s => {
+              let resultadoHtml, gananciaHtml, salidaTxt, duracionTxt;
+
+              if (s.estado === "Abierto") {
+                resultadoHtml = `<span class="abierto">Abierto</span>`;
+                gananciaHtml = "-";
+                salidaTxt = "-";
+                duracionTxt = "-";
+              } else {
+                const gananciaUSD = MONTO_POR_SENAL * (s.return_pct / 100);
+                gananciaToken += gananciaUSD;
+                capitalGlobal += gananciaUSD;
+                const clase = s.resultado === "TP" ? "tp" : "sl";
+                const signoG = gananciaUSD >= 0 ? "+" : "";
+                resultadoHtml = `<span class="${clase}">${s.resultado === "TP" ? "✅ TP" : "❌ SL"} (${s.return_pct >= 0 ? "+" : ""}${s.return_pct}%)</span>`;
+                gananciaHtml = `<span class="${gananciaUSD >= 0 ? 'tp' : 'sl'}">${signoG}$${gananciaUSD.toFixed(2)}</span>`;
+                salidaTxt = s.salida ?? "-";
+                duracionTxt = s.duracion ?? "-";
+              }
+
+              filas += `
+                <tr>
+                  <td>$100</td>
+                  <td>${s.entrada}</td>
+                  <td>${salidaTxt}</td>
+                  <td>${resultadoHtml}</td>
+                  <td>${duracionTxt}</td>
+                  <td>${gananciaHtml}</td>
+                </tr>`;
+            });
+
+            const signoTotal = gananciaToken >= 0 ? "+" : "";
+            const claseTotal = gananciaToken >= 0 ? "positivo" : "negativo";
+
+            html += `
+              <h3 class="token-title">
+                <span>${par} (${lista.length} señal${lista.length > 1 ? "es" : ""})</span>
+                <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
+              </h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Inversión</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Resultado</th>
+                    <th>Duración</th>
+                    <th>Ganancia</th>
+                  </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+              </table>`;
           });
+
+          contenedor.innerHTML = html;
         }
 
-        procesar("LONG", "tabla-long");
-        procesar("SHORT", "tabla-short");
+        renderTipo("LONG", "contenedor-long");
+        renderTipo("SHORT", "contenedor-short");
 
         const elCapital = document.getElementById("capital-total");
-        const signo = capital >= 0 ? "+" : "";
-        elCapital.textContent = `${signo}$${capital.toFixed(2)}`;
-        elCapital.className = "monto " + (capital >= 0 ? "positivo" : "negativo");
+        const signo = capitalGlobal >= 0 ? "+" : "";
+        elCapital.textContent = `${signo}$${capitalGlobal.toFixed(2)}`;
+        elCapital.className = "monto " + (capitalGlobal >= 0 ? "positivo" : "negativo");
       })
       .catch(() => {
         document.getElementById("capital-total").textContent = "Error cargando datos";

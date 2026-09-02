@@ -1,77 +1,129 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Mi Dashboard</title>
-  <style>
-    body {
-      background-color: #0d1117;
-      color: #e6edf3;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    h1 {
-      color: #58a6ff;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #30363d;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #161b22;
-    }
-    .long { color: #3fb950; font-weight: bold; }
-    .short { color: #f85149; font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulls & Bears IA - Dashboard</title>
+<style>
+  body {
+    background-color: #0d1117;
+    color: #e6edf3;
+    font-family: Arial, sans-serif;
+    padding: 15px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { color: #58a6ff; font-size: 1.4em; }
+  h2 { margin-top: 30px; padding: 8px 12px; border-radius: 6px; }
+  h2.long { background-color: #123321; color: #3fb950; }
+  h2.short { background-color: #3a1a1a; color: #f85149; }
+  .capital-box {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+  }
+  .capital-box .monto { font-size: 1.8em; font-weight: bold; }
+  .positivo { color: #3fb950; }
+  .negativo { color: #f85149; }
+  .aviso { font-size: 0.75em; color: #8b949e; margin-top: 5px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+  th, td { border: 1px solid #30363d; padding: 8px; text-align: center; }
+  th { background-color: #161b22; }
+  .tp { color: #3fb950; font-weight: bold; }
+  .sl { color: #f85149; font-weight: bold; }
+  footer {
+    margin-top: 40px;
+    padding: 15px;
+    background-color: #161b22;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 0.9em;
+  }
+  footer a { color: #58a6ff; text-decoration: none; }
+</style>
 </head>
 <body>
-  <h1>📊 Mi Dashboard - Bulls & Bears IA</h1>
-  <table id="tabla-senales">
+  <h1>📊 Bulls & Bears IA - Dashboard</h1>
+
+  <div class="capital-box">
+    <div>💰 Capital simulado ($100 por señal)</div>
+    <div class="monto" id="capital-total">Cargando...</div>
+    <div class="aviso">Simulación educativa — no representa dinero real</div>
+  </div>
+
+  <h2 class="long">🟢 LONGS</h2>
+  <table id="tabla-long">
     <thead>
-      <tr>
-        <th>Par</th>
-        <th>Tipo</th>
-        <th>Entrada</th>
-        <th>SL</th>
-        <th>TP</th>
-        <th>Estado</th>
-      </tr>
+      <tr><th>Activo</th><th># Señales</th><th>✅ TP</th><th>❌ SL</th><th>Abiertas</th></tr>
     </thead>
-    <tbody id="cuerpo-tabla">
-      <tr><td colspan="6">Cargando señales...</td></tr>
-    </tbody>
+    <tbody><tr><td colspan="5">Cargando...</td></tr></tbody>
   </table>
+
+  <h2 class="short">🔴 SHORTS</h2>
+  <table id="tabla-short">
+    <thead>
+      <tr><th>Activo</th><th># Señales</th><th>✅ TP</th><th>❌ SL</th><th>Abiertas</th></tr>
+    </thead>
+    <tbody><tr><td colspan="5">Cargando...</td></tr></tbody>
+  </table>
+
+  <footer>
+    📩 <b>Contáctanos</b><br>
+    Telegram: <a href="https://t.me/tu_canal" target="_blank">@tu_canal</a><br>
+    Correo: <a href="mailto:tucorreo@ejemplo.com">tucorreo@ejemplo.com</a>
+  </footer>
 
   <script>
     const URL_DATOS = "https://raw.githubusercontent.com/bztoken57-web/bot-datos/main/senales.json";
+    const MONTO_POR_SENAL = 100;
 
     fetch(URL_DATOS)
       .then(res => res.json())
       .then(datos => {
-        const cuerpo = document.getElementById("cuerpo-tabla");
-        cuerpo.innerHTML = "";
-        datos.forEach(s => {
-          const clase = s.tipo === "LONG" ? "long" : "short";
-          cuerpo.innerHTML += `
-            <tr>
-              <td>${s.par}</td>
-              <td class="${clase}">${s.tipo}</td>
-              <td>${s.entrada}</td>
-              <td>${s.sl}</td>
-              <td>${s.tp}</td>
-              <td>${s.estado}</td>
-            </tr>`;
-        });
+        let capital = 0;
+
+        function procesar(tipo, tbodyId) {
+          const grupos = {};
+          datos.filter(s => s.tipo === tipo).forEach(s => {
+            if (!grupos[s.par]) grupos[s.par] = { total: 0, tp: 0, sl: 0, abiertas: 0 };
+            grupos[s.par].total++;
+            if (s.estado === "Abierto") {
+              grupos[s.par].abiertas++;
+            } else if (s.resultado === "TP") {
+              grupos[s.par].tp++;
+              capital += MONTO_POR_SENAL * (s.return_pct / 100);
+            } else if (s.resultado === "SL") {
+              grupos[s.par].sl++;
+              capital += MONTO_POR_SENAL * (s.return_pct / 100);
+            }
+          });
+
+          const tbody = document.querySelector(`#${tbodyId} tbody`);
+          const pares = Object.keys(grupos);
+          if (pares.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5'>Sin señales todavía</td></tr>";
+            return;
+          }
+          tbody.innerHTML = "";
+          pares.forEach(par => {
+            const g = grupos[par];
+            tbody.innerHTML += `<tr><td>${par}</td><td>${g.total}</td><td class="tp">${g.tp}</td><td class="sl">${g.sl}</td><td>${g.abiertas}</td></tr>`;
+          });
+        }
+
+        procesar("LONG", "tabla-long");
+        procesar("SHORT", "tabla-short");
+
+        const elCapital = document.getElementById("capital-total");
+        const signo = capital >= 0 ? "+" : "";
+        elCapital.textContent = `${signo}$${capital.toFixed(2)}`;
+        elCapital.className = "monto " + (capital >= 0 ? "positivo" : "negativo");
       })
-      .catch(err => {
-        document.getElementById("cuerpo-tabla").innerHTML =
-          "<tr><td colspan='6'>Error cargando datos</td></tr>";
+      .catch(() => {
+        document.getElementById("capital-total").textContent = "Error cargando datos";
       });
   </script>
 </body>

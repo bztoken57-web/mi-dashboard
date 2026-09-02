@@ -5,57 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>B&B AI - Dashboard</title>
 <style>
-  body {
-    background-color: #0d1117;
-    color: #e6edf3;
-    font-family: Arial, sans-serif;
-    padding: 15px;
-    max-width: 950px;
-    margin: 0 auto;
-  }
-  h1 { color: #58a6ff; font-size: 1.4em; }
-  h2 { margin-top: 30px; padding: 8px 12px; border-radius: 6px; font-size: 1.1em; }
-  h2.long { background-color: #123321; color: #3fb950; }
-  h2.short { background-color: #3a1a1a; color: #f85149; }
+  body { background-color:#0d1117; color:#e6edf3; font-family:Arial,sans-serif; padding:15px; max-width:1000px; margin:0 auto; }
+  h1 { color:#58a6ff; font-size:1.4em; }
+  h2 { margin-top:30px; padding:8px 12px; border-radius:6px; font-size:1.1em; }
+  h2.long { background-color:#123321; color:#3fb950; }
+  h2.short { background-color:#3a1a1a; color:#f85149; }
   h3.token-title {
-    margin: 18px 0 4px 0;
-    font-size: 1em;
-    color: #c9d1d9;
-    display: flex;
-    justify-content: space-between;
-    background: #161b22;
-    padding: 6px 10px;
-    border-radius: 6px;
+    margin:18px 0 4px 0; font-size:1em; color:#c9d1d9;
+    display:flex; justify-content:space-between;
+    background:#161b22; padding:6px 10px; border-radius:6px;
   }
   .capital-box {
-    background: linear-gradient(135deg, #161b22, #1c2333);
-    border: 1px solid #30363d;
-    border-radius: 10px;
-    padding: 18px;
-    margin: 15px 0;
-    text-align: center;
+    background:linear-gradient(135deg,#161b22,#1c2333);
+    border:1px solid #30363d; border-radius:10px; padding:18px; margin:15px 0; text-align:center;
   }
-  .capital-box .label { font-size: 0.85em; color: #8b949e; }
-  .capital-box .monto { font-size: 2em; font-weight: bold; margin-top: 5px; }
-  .positivo { color: #3fb950; }
-  .negativo { color: #f85149; }
-  .aviso { font-size: 0.75em; color: #8b949e; margin-top: 8px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.82em; }
-  th, td { border: 1px solid #30363d; padding: 6px; text-align: center; }
-  th { background-color: #161b22; }
-  .tp { color: #3fb950; font-weight: bold; }
-  .sl { color: #f85149; font-weight: bold; }
-  .abierto { color: #d29922; font-weight: bold; }
-  footer {
-    margin-top: 40px;
-    padding: 15px;
-    background-color: #161b22;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 0.9em;
-  }
-  footer a { color: #58a6ff; text-decoration: none; }
-  .vacio { color: #8b949e; padding: 10px; text-align: center; }
+  .capital-box .label { font-size:0.85em; color:#8b949e; }
+  .capital-box .monto { font-size:2em; font-weight:bold; margin-top:5px; }
+  .positivo { color:#3fb950; }
+  .negativo { color:#f85149; }
+  .aviso { font-size:0.75em; color:#8b949e; margin-top:8px; }
+  table { width:100%; border-collapse:collapse; margin-top:5px; font-size:0.78em; }
+  th, td { border:1px solid #30363d; padding:5px; text-align:center; }
+  th { background-color:#161b22; }
+  .tp { color:#3fb950; font-weight:bold; }
+  .sl { color:#f85149; font-weight:bold; }
+  .abierto { color:#d29922; font-weight:bold; }
+  footer { margin-top:40px; padding:15px; background-color:#161b22; border-radius:10px; text-align:center; font-size:0.9em; }
+  footer a { color:#58a6ff; text-decoration:none; }
+  .vacio { color:#8b949e; padding:10px; text-align:center; }
 </style>
 </head>
 <body>
@@ -111,6 +88,8 @@
             let filas = "";
             lista.forEach(s => {
               let resultadoHtml, gananciaHtml, salidaTxt, duracionTxt;
+              const impulsoTxt = s.impulso != null ? `${s.impulso > 0 ? "+" : ""}${s.impulso}%` : "-";
+              const rsiTxt = s.rsi != null ? s.rsi : "-";
 
               if (s.estado === "Abierto") {
                 resultadoHtml = `<span class="abierto">Abierto</span>`;
@@ -133,6 +112,8 @@
                 <tr>
                   <td>$100</td>
                   <td>${s.entrada}</td>
+                  <td>${impulsoTxt}</td>
+                  <td>${rsiTxt}</td>
                   <td>${salidaTxt}</td>
                   <td>${resultadoHtml}</td>
                   <td>${duracionTxt}</td>
@@ -153,6 +134,8 @@
                   <tr>
                     <th>Inversión</th>
                     <th>Entrada</th>
+                    <th>Impulso</th>
+                    <th>RSI</th>
                     <th>Salida</th>
                     <th>Resultado</th>
                     <th>Duración</th>

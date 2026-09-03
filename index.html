@@ -33,11 +33,10 @@
   .acordeon-contenido.abierto { display:block; }
   .token-header {
     display:flex; justify-content:space-between; align-items:center;
-    margin:14px 0 4px 0; padding:7px 10px; border-radius:6px;
+    margin:10px 0 4px 0; padding:9px 10px; border-radius:6px;
     background:#161b22; cursor:pointer;
   }
-  .token-nombre-long { color:#79c0ff; font-weight:bold; }
-  .token-nombre-short { color:#ff9492; font-weight:bold; }
+  .token-nombre { color:#d2a8ff; font-weight:bold; }
   .token-flecha { font-size:0.9em; transition: transform 0.2s; }
   .token-flecha.abierto { transform: rotate(180deg); }
   .token-tabla-wrap { display:none; overflow-x:auto; }
@@ -83,22 +82,22 @@
         <div class="monto" id="capital-total">Cargando...</div>
       </div>
     </div>
-    <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT — $100 por señal (o saldo disponible) — no representa dinero real</div>
+    <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT — $100 por señal (o saldo disponible) — comisión real Binance 0.05%+0.05% — no representa dinero real</div>
   </div>
 
-  <div class="acordeon-header long abierto" id="header-long" onclick="toggleAcordeon('long')">
-    <span>🟢 LONGS</span>
+  <div class="acordeon-header long" id="header-long" onclick="toggleAcordeon('long')">
+    <span>🟢 LONGS <span id="contador-long"></span></span>
     <span class="flecha">▼</span>
   </div>
-  <div class="acordeon-contenido abierto" id="contenido-long">
+  <div class="acordeon-contenido" id="contenido-long">
     <div id="tokens-long"><div class="vacio">Cargando...</div></div>
   </div>
 
-  <div class="acordeon-header short abierto" id="header-short" onclick="toggleAcordeon('short')">
-    <span>🔴 SHORTS</span>
+  <div class="acordeon-header short" id="header-short" onclick="toggleAcordeon('short')">
+    <span>🔴 SHORTS <span id="contador-short"></span></span>
     <span class="flecha">▼</span>
   </div>
-  <div class="acordeon-contenido abierto" id="contenido-short">
+  <div class="acordeon-contenido" id="contenido-short">
     <div id="tokens-short"><div class="vacio">Cargando...</div></div>
   </div>
 
@@ -129,18 +128,20 @@
     }
 
     function ordenarPares(pares) {
-      const normales = pares.filter(p => /^[A-Za-z0-9]+$/.test(p)).sort();
-      const especiales = pares.filter(p => !/^[A-Za-z0-9]+$/.test(p)).sort();
-      return [...normales, ...especiales];
+      const empiezanConLetra = pares.filter(p => /^[A-Za-z]/.test(p)).sort((a, b) => a.localeCompare(b));
+      const resto = pares.filter(p => !/^[A-Za-z]/.test(p)).sort((a, b) => a.localeCompare(b));
+      return [...empiezanConLetra, ...resto];
     }
 
     fetch(URL_DATOS)
       .then(res => res.json())
       .then(datos => {
 
-        function renderTipo(tipo, contenedorId, claseNombre) {
+        function renderTipo(tipo, contenedorId, contadorId) {
           const grupos = {};
           const ordenCronologico = datos.filter(s => s.tipo === tipo);
+
+          document.getElementById(contadorId).textContent = `(${ordenCronologico.length} señales)`;
 
           ordenCronologico.forEach(s => {
             if (!grupos[s.par]) grupos[s.par] = [];
@@ -227,7 +228,7 @@
 
             html += `
               <div class="token-header" onclick="toggleToken('${tokenId}')">
-                <span class="${claseNombre}">${par} (${lista.length} señal${lista.length > 1 ? "es" : ""})</span>
+                <span class="token-nombre">${par} (${lista.length} señal${lista.length > 1 ? "es" : ""})</span>
                 <span>
                   <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
                   <span class="token-flecha" id="flecha-${tokenId}">▼</span>
@@ -250,8 +251,8 @@
           return saldoActual - CAPITAL_INICIAL;
         }
 
-        const gananciaLong = renderTipo("LONG", "tokens-long", "token-nombre-long");
-        const gananciaShort = renderTipo("SHORT", "tokens-short", "token-nombre-short");
+        const gananciaLong = renderTipo("LONG", "tokens-long", "contador-long");
+        const gananciaShort = renderTipo("SHORT", "tokens-short", "contador-short");
 
         function pintar(id, valor) {
           const el = document.getElementById(id);

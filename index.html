@@ -6,10 +6,14 @@
 <title>B&B AI - Dashboard</title>
 <style>
   body { background-color:#0d1117; color:#e6edf3; font-family:Arial,sans-serif; padding:15px; max-width:1000px; margin:0 auto; }
-  h1 { font-size:1.5em; display:flex; align-items:center; gap:8px; }
+  h1 { font-size:1.5em; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
   .b-verde { color:#3fb950; }
   .b-roja { color:#f85149; }
-  .resto-titulo { color:#e6edf3; }
+  .resto-titulo { color:#ffffff; }
+  .refrescar-btn {
+    margin-left:auto; background:#21262d; border:1px solid #30363d; color:#e6edf3;
+    border-radius:6px; padding:5px 10px; font-size:0.6em; cursor:pointer;
+  }
   .capital-box {
     background:linear-gradient(135deg,#161b22,#1c2333);
     border:1px solid #30363d; border-radius:10px; padding:18px; margin:15px 0;
@@ -36,17 +40,17 @@
     margin:10px 0 4px 0; padding:9px 10px; border-radius:6px;
     background:#161b22; cursor:pointer;
   }
-  .token-nombre { color:#d2a8ff; font-weight:bold; }
+  .token-nombre { color:#ffffff; font-weight:bold; }
   .token-flecha { font-size:0.9em; transition: transform 0.2s; }
   .token-flecha.abierto { transform: rotate(180deg); }
   .token-tabla-wrap { display:none; overflow-x:auto; }
   .token-tabla-wrap.abierto { display:block; }
-  table { width:100%; border-collapse:collapse; margin-top:5px; font-size:0.75em; min-width:680px; }
+  table { width:100%; border-collapse:collapse; margin-top:5px; font-size:0.72em; min-width:760px; }
   th, td { border:1px solid #30363d; padding:5px; text-align:center; white-space:nowrap; }
   th { background-color:#0d1117; }
   .tp { color:#3fb950; font-weight:bold; }
   .sl { color:#f85149; font-weight:bold; }
-  .abierto-badge { color:#d29922; font-weight:bold; }
+  .abierto-badge { color:#0d1117; background:#d29922; font-weight:bold; border-radius:4px; padding:2px 6px; }
   .badge-b { background:#3fb950; color:#0d1117; border-radius:4px; padding:1px 5px; font-weight:bold; font-size:0.9em; }
   .badge-s { background:#f85149; color:#0d1117; border-radius:4px; padding:1px 5px; font-weight:bold; font-size:0.9em; }
   footer {
@@ -62,10 +66,14 @@
     font-size:1.4em; background:#0d1117; border:1px solid #30363d;
   }
   .vacio { color:#8b949e; padding:10px; text-align:center; }
+  .actualizado { font-size:0.7em; color:#8b949e; text-align:center; margin-top:6px; }
 </style>
 </head>
 <body>
-  <h1>🎯 <span class="b-verde">B</span><span class="b-roja">B</span><span class="resto-titulo">&AI - Dashboard</span></h1>
+  <h1>
+    🎯 <span class="b-verde">B</span><span class="resto-titulo">&</span><span class="b-roja">B</span><span class="resto-titulo"> AI - Dashboard</span>
+    <button class="refrescar-btn" onclick="cargarDatos()">🔄 Actualizar</button>
+  </h1>
 
   <div class="capital-box">
     <div class="capital-row">
@@ -82,7 +90,8 @@
         <div class="monto" id="capital-total">Cargando...</div>
       </div>
     </div>
-    <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT — $100 por señal (o saldo disponible) — comisión real Binance 0.05%+0.05% — no representa dinero real</div>
+    <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT — $100 por señal (o saldo disponible) — comisión real Binance 0.05%+0.05% + funding estimado — no representa dinero real</div>
+    <div class="actualizado" id="ultima-actualizacion"></div>
   </div>
 
   <div class="acordeon-header long" id="header-long" onclick="toggleAcordeon('long')">
@@ -116,6 +125,7 @@
     const URL_DATOS = "https://raw.githubusercontent.com/bztoken57-web/bot-datos/main/senales.json";
     const CAPITAL_INICIAL = 3000;
     const COMISION_PCT = 0.1;
+    const FUNDING_PCT_POR_CORTE = 0.01;
 
     function toggleAcordeon(tipo) {
       document.getElementById(`header-${tipo}`).classList.toggle('abierto');
@@ -133,140 +143,170 @@
       return [...empiezanConLetra, ...resto];
     }
 
-    fetch(URL_DATOS)
-      .then(res => res.json())
-      .then(datos => {
+    function parseDuracionMinutos(duracionTxt) {
+      if (!duracionTxt) return 0;
+      let minutos = 0;
+      const h = duracionTxt.match(/(\d+)h/);
+      const m = duracionTxt.match(/(\d+)m/);
+      if (h) minutos += parseInt(h[1]) * 60;
+      if (m) minutos += parseInt(m[1]);
+      return minutos;
+    }
 
-        function renderTipo(tipo, contenedorId, contadorId) {
-          const grupos = {};
-          const ordenCronologico = datos.filter(s => s.tipo === tipo);
+    function contarCortesFunding(duracionMin) {
+      return Math.floor(duracionMin / 480);
+    }
 
-          document.getElementById(contadorId).textContent = `(${ordenCronologico.length} señales)`;
+    function cargarDatos() {
+      fetch(URL_DATOS + "?t=" + Date.now())
+        .then(res => res.json())
+        .then(datos => {
 
-          ordenCronologico.forEach(s => {
-            if (!grupos[s.par]) grupos[s.par] = [];
-            grupos[s.par].push(s);
-          });
+          function renderTipo(tipo, contenedorId, contadorId) {
+            const grupos = {};
+            const ordenCronologico = datos.filter(s => s.tipo === tipo);
 
-          const contenedor = document.getElementById(contenedorId);
-          let pares = ordenarPares(Object.keys(grupos));
+            document.getElementById(contadorId).textContent = `(${ordenCronologico.length} señales)`;
 
-          if (pares.length === 0) {
-            contenedor.innerHTML = "<div class='vacio'>Sin señales todavía</div>";
-            return 0;
-          }
-
-          let saldoActual = CAPITAL_INICIAL;
-          const montoPorSenal = {};
-          ordenCronologico.forEach((s, idx) => {
-            const monto = Math.min(100, saldoActual);
-            montoPorSenal[idx] = monto;
-            if (s.estado !== "Abierto" && s.return_pct != null) {
-              const comisionUSD = monto * (COMISION_PCT / 100);
-              const gananciaBruta = monto * (s.return_pct / 100);
-              const gananciaNeta = gananciaBruta - comisionUSD;
-              saldoActual += gananciaNeta;
-            }
-          });
-
-          let html = "";
-          const mapaIdx = new Map(ordenCronologico.map((s, i) => [s, i]));
-
-          pares.forEach(par => {
-            const lista = grupos[par];
-            let gananciaToken = 0;
-            const tokenId = `${tipo}-${par}`.replace(/[^a-zA-Z0-9]/g, '_');
-
-            let filas = "";
-            lista.forEach(s => {
-              const idx = mapaIdx.get(s);
-              const monto = montoPorSenal[idx];
-              const badge = tipo === "LONG"
-                ? `<span class="badge-b">B</span>`
-                : `<span class="badge-s">S</span>`;
-              const impulsoTxt = s.impulso != null ? `${s.impulso > 0 ? "+" : ""}${s.impulso}%` : "-";
-              const rsiTxt = s.rsi != null ? s.rsi : "-";
-
-              let resultadoHtml, gananciaHtml, salidaTxt, duracionTxt, comisionTxt;
-
-              if (s.estado === "Abierto") {
-                resultadoHtml = `<span class="abierto-badge">Abierto</span>`;
-                gananciaHtml = "-";
-                salidaTxt = "-";
-                duracionTxt = "-";
-                comisionTxt = "-";
-              } else {
-                const comisionUSD = monto * (COMISION_PCT / 100);
-                const gananciaBruta = monto * (s.return_pct / 100);
-                const gananciaNeta = gananciaBruta - comisionUSD;
-                gananciaToken += gananciaNeta;
-                const clase = s.resultado === "TP" ? "tp" : "sl";
-                const signoG = gananciaNeta >= 0 ? "+" : "";
-                resultadoHtml = `<span class="${clase}">${s.resultado === "TP" ? "✅ TP" : "❌ SL"} (${s.return_pct >= 0 ? "+" : ""}${s.return_pct}%)</span>`;
-                gananciaHtml = `<span class="${gananciaNeta >= 0 ? 'tp' : 'sl'}">${signoG}$${gananciaNeta.toFixed(2)}</span>`;
-                salidaTxt = s.salida ?? "-";
-                duracionTxt = s.duracion ?? "-";
-                comisionTxt = `$${comisionUSD.toFixed(2)}`;
-              }
-
-              filas += `
-                <tr>
-                  <td>$${monto.toFixed(2)}</td>
-                  <td>${badge} ${s.entrada}</td>
-                  <td>${impulsoTxt}</td>
-                  <td>${rsiTxt}</td>
-                  <td>${salidaTxt}</td>
-                  <td>${resultadoHtml}</td>
-                  <td>${duracionTxt}</td>
-                  <td>${comisionTxt}</td>
-                  <td>${gananciaHtml}</td>
-                </tr>`;
+            ordenCronologico.forEach(s => {
+              if (!grupos[s.par]) grupos[s.par] = [];
+              grupos[s.par].push(s);
             });
 
-            const signoTotal = gananciaToken >= 0 ? "+" : "";
-            const claseTotal = gananciaToken >= 0 ? "positivo" : "negativo";
+            const contenedor = document.getElementById(contenedorId);
+            let pares = ordenarPares(Object.keys(grupos));
 
-            html += `
-              <div class="token-header" onclick="toggleToken('${tokenId}')">
-                <span class="token-nombre">${par} (${lista.length} señal${lista.length > 1 ? "es" : ""})</span>
-                <span>
-                  <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
-                  <span class="token-flecha" id="flecha-${tokenId}">▼</span>
-                </span>
-              </div>
-              <div class="token-tabla-wrap" id="wrap-${tokenId}">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Inversión</th><th>Entrada</th><th>Impulso</th><th>RSI</th>
-                      <th>Salida</th><th>Resultado</th><th>Duración</th><th>Comisión</th><th>Ganancia</th>
-                    </tr>
-                  </thead>
-                  <tbody>${filas}</tbody>
-                </table>
-              </div>`;
-          });
+            if (pares.length === 0) {
+              contenedor.innerHTML = "<div class='vacio'>Sin señales todavía</div>";
+              return 0;
+            }
 
-          contenedor.innerHTML = html;
-          return saldoActual - CAPITAL_INICIAL;
-        }
+            let saldoActual = CAPITAL_INICIAL;
+            const montoPorSenal = {};
+            ordenCronologico.forEach((s, idx) => {
+              const monto = Math.min(100, saldoActual);
+              montoPorSenal[idx] = monto;
+              if (s.estado !== "Abierto" && s.return_pct != null) {
+                const comisionUSD = monto * (COMISION_PCT / 100);
+                const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
+                const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
+                const gananciaBruta = monto * (s.return_pct / 100);
+                const gananciaNeta = gananciaBruta - comisionUSD - fundingUSD;
+                saldoActual += gananciaNeta;
+              }
+            });
 
-        const gananciaLong = renderTipo("LONG", "tokens-long", "contador-long");
-        const gananciaShort = renderTipo("SHORT", "tokens-short", "contador-short");
+            let html = "";
+            const mapaIdx = new Map(ordenCronologico.map((s, i) => [s, i]));
 
-        function pintar(id, valor) {
-          const el = document.getElementById(id);
-          const signo = valor >= 0 ? "+" : "";
-          el.textContent = `${signo}$${valor.toFixed(2)}`;
-          el.className = "monto " + (valor >= 0 ? "positivo" : "negativo");
-        }
-        pintar("capital-long", gananciaLong);
-        pintar("capital-short", gananciaShort);
-        pintar("capital-total", gananciaLong + gananciaShort);
-      })
-      .catch(() => {
-        document.getElementById("capital-total").textContent = "Error cargando datos";
-      });
+            pares.forEach(par => {
+              const lista = grupos[par];
+              let gananciaToken = 0;
+              const tokenId = `${tipo}-${par}`.replace(/[^a-zA-Z0-9]/g, '_');
+
+              let filas = "";
+              lista.forEach(s => {
+                const idx = mapaIdx.get(s);
+                const monto = montoPorSenal[idx];
+                const badge = tipo === "LONG"
+                  ? `<span class="badge-b">B</span>`
+                  : `<span class="badge-s">S</span>`;
+                const impulsoTxt = s.impulso != null ? `${s.impulso > 0 ? "+" : ""}${s.impulso}%` : "-";
+                const rsiTxt = s.rsi != null ? s.rsi : "-";
+
+                let resultadoHtml, gananciaHtml, salidaTxt, duracionTxt, comisionTxt, fundingTxt;
+
+                if (s.estado === "Abierto") {
+                  resultadoHtml = `<span class="abierto-badge">🟡 Abierto</span>`;
+                  gananciaHtml = "-";
+                  salidaTxt = "-";
+                  duracionTxt = "-";
+                  comisionTxt = "-";
+                  fundingTxt = "-";
+                } else {
+                  const comisionUSD = monto * (COMISION_PCT / 100);
+                  const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
+                  const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
+                  const gananciaBruta = monto * (s.return_pct / 100);
+                  const gananciaNeta = gananciaBruta - comisionUSD - fundingUSD;
+                  gananciaToken += gananciaNeta;
+                  const clase = s.resultado === "TP" ? "tp" : "sl";
+                  const signoG = gananciaNeta >= 0 ? "+" : "";
+                  resultadoHtml = `<span class="${clase}">${s.resultado === "TP" ? "✅ TP" : "❌ SL"} (${s.return_pct >= 0 ? "+" : ""}${s.return_pct}%)</span>`;
+                  gananciaHtml = `<span class="${gananciaNeta >= 0 ? 'tp' : 'sl'}">${signoG}$${gananciaNeta.toFixed(2)}</span>`;
+                  salidaTxt = s.salida ?? "-";
+                  duracionTxt = s.duracion ?? "-";
+                  comisionTxt = `$${comisionUSD.toFixed(2)}`;
+                  fundingTxt = cortes > 0 ? `$${fundingUSD.toFixed(2)}*` : "$0.00";
+                }
+
+                filas += `
+                  <tr>
+                    <td>$${monto.toFixed(2)}</td>
+                    <td>${badge} ${s.entrada}</td>
+                    <td>${impulsoTxt}</td>
+                    <td>${rsiTxt}</td>
+                    <td>${salidaTxt}</td>
+                    <td>${resultadoHtml}</td>
+                    <td>${duracionTxt}</td>
+                    <td>${comisionTxt}</td>
+                    <td>${fundingTxt}</td>
+                    <td>${gananciaHtml}</td>
+                  </tr>`;
+              });
+
+              const signoTotal = gananciaToken >= 0 ? "+" : "";
+              const claseTotal = gananciaToken >= 0 ? "positivo" : "negativo";
+
+              html += `
+                <div class="token-header" onclick="toggleToken('${tokenId}')">
+                  <span class="token-nombre">${par} (${lista.length} señal${lista.length > 1 ? "es" : ""})</span>
+                  <span>
+                    <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
+                    <span class="token-flecha" id="flecha-${tokenId}">▼</span>
+                  </span>
+                </div>
+                <div class="token-tabla-wrap" id="wrap-${tokenId}">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Inversión</th><th>Entrada</th><th>Impulso</th><th>RSI</th>
+                        <th>Salida</th><th>Resultado</th><th>Duración</th><th>Comisión</th><th>Funding*</th><th>Ganancia</th>
+                      </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                  </table>
+                </div>`;
+            });
+
+            contenedor.innerHTML = html;
+            return saldoActual - CAPITAL_INICIAL;
+          }
+
+          const gananciaLong = renderTipo("LONG", "tokens-long", "contador-long");
+          const gananciaShort = renderTipo("SHORT", "tokens-short", "contador-short");
+
+          function pintar(id, valor) {
+            const el = document.getElementById(id);
+            const signo = valor >= 0 ? "+" : "";
+            el.textContent = `${signo}$${valor.toFixed(2)}`;
+            el.className = "monto " + (valor >= 0 ? "positivo" : "negativo");
+          }
+          pintar("capital-long", gananciaLong);
+          pintar("capital-short", gananciaShort);
+          pintar("capital-total", gananciaLong + gananciaShort);
+
+          const ahora = new Date();
+          document.getElementById("ultima-actualizacion").textContent =
+            `Última actualización: ${ahora.toLocaleTimeString('es-CO')} — *Funding estimado (0.01% por corte de 8h)`;
+        })
+        .catch(() => {
+          document.getElementById("capital-total").textContent = "Error cargando datos";
+        });
+    }
+
+    cargarDatos();
+    setInterval(cargarDatos, 30000);
   </script>
 </body>
 </html>

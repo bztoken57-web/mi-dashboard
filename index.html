@@ -10,10 +10,16 @@
   .b-verde { color:#3fb950; }
   .b-roja { color:#f85149; }
   .resto-titulo { color:#ffffff; }
-  .refrescar-btn {
+  .menu-btn {
     margin-left:auto; background:#21262d; border:1px solid #30363d; color:#e6edf3;
-    border-radius:6px; padding:5px 10px; font-size:0.6em; cursor:pointer;
+    border-radius:6px; padding:6px 12px; font-size:0.7em; cursor:pointer;
   }
+  .menu-panel {
+    display:none; background:#161b22; border:1px solid #30363d; border-radius:10px;
+    padding:14px; margin-top:8px; font-size:0.85em;
+  }
+  .menu-panel.abierto { display:block; }
+  .menu-panel a { color:#58a6ff; text-decoration:none; display:block; margin:6px 0; }
   .capital-box {
     background:linear-gradient(135deg,#161b22,#1c2333);
     border:1px solid #30363d; border-radius:10px; padding:18px; margin:15px 0;
@@ -25,9 +31,22 @@
   .positivo { color:#3fb950; }
   .negativo { color:#f85149; }
   .aviso { font-size:0.72em; color:#8b949e; margin-top:10px; text-align:center; }
+  .refrescar-btn {
+    display:block; margin:10px auto 0; background:#21262d; border:1px solid #30363d; color:#e6edf3;
+    border-radius:6px; padding:5px 12px; font-size:0.75em; cursor:pointer;
+  }
+  .fecha-header {
+    margin-top:24px; padding:8px 14px; border-radius:8px; background:#1c2333;
+    color:#58a6ff; font-weight:bold; font-size:0.95em; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .fecha-contenido { display:none; }
+  .fecha-contenido.abierto { display:block; }
+  .fecha-flecha { transition:transform 0.2s; }
+  .fecha-flecha.abierto { transform:rotate(180deg); }
   .acordeon-header {
     display:flex; justify-content:space-between; align-items:center;
-    padding:10px 14px; border-radius:8px; margin-top:20px; cursor:pointer;
+    padding:9px 14px; border-radius:8px; margin-top:12px; cursor:pointer;
   }
   .acordeon-header.long { background-color:#123321; color:#3fb950; }
   .acordeon-header.short { background-color:#3a1a1a; color:#f85149; }
@@ -37,7 +56,7 @@
   .acordeon-contenido.abierto { display:block; }
   .token-header {
     display:flex; justify-content:space-between; align-items:center;
-    margin:10px 0 4px 0; padding:9px 10px; border-radius:6px;
+    margin:8px 0 4px 0; padding:8px 10px; border-radius:6px;
     background:#161b22; cursor:pointer;
   }
   .token-nombre { color:#ffffff; font-weight:bold; }
@@ -62,8 +81,8 @@
     text-decoration:none; color:#e6edf3; font-size:0.85em;
   }
   .contacto-icono {
-    width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:1.4em; background:#0d1117; border:1px solid #30363d;
+    width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.6em; background:#0d1117; border:1px solid #30363d;
   }
   .vacio { color:#8b949e; padding:10px; text-align:center; }
   .actualizado { font-size:0.7em; color:#8b949e; text-align:center; margin-top:6px; }
@@ -72,8 +91,15 @@
 <body>
   <h1>
     🎯 <span class="b-verde">B</span><span class="resto-titulo">&</span><span class="b-roja">B</span><span class="resto-titulo"> AI - Dashboard</span>
-    <button class="refrescar-btn" onclick="cargarDatos()">🔄 Actualizar</button>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
   </h1>
+
+  <div class="menu-panel" id="menu-panel">
+    <a href="https://www.binance.com" target="_blank">📈 Síguenos en Binance</a>
+    <a href="https://t.me/BullsandBearsIA" target="_blank">📩 Únete al canal de Telegram</a>
+    <a href="mailto:botsignaltg@gmail.com">✉️ Contáctanos por correo</a>
+    <div style="color:#8b949e; margin-top:8px; font-size:0.85em;">Para más información sobre nuestras señales y resultados, contáctanos por cualquiera de estos medios.</div>
+  </div>
 
   <div class="capital-box">
     <div class="capital-row">
@@ -92,32 +118,19 @@
     </div>
     <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT — $100 por señal (o saldo disponible) — comisión real Binance 0.05%+0.05% + funding estimado — no representa dinero real</div>
     <div class="actualizado" id="ultima-actualizacion"></div>
+    <button class="refrescar-btn" onclick="cargarDatos()">🔄 Actualizar</button>
   </div>
 
-  <div class="acordeon-header long" id="header-long" onclick="toggleAcordeon('long')">
-    <span>🟢 LONGS <span id="contador-long"></span></span>
-    <span class="flecha">▼</span>
-  </div>
-  <div class="acordeon-contenido" id="contenido-long">
-    <div id="tokens-long"><div class="vacio">Cargando...</div></div>
-  </div>
-
-  <div class="acordeon-header short" id="header-short" onclick="toggleAcordeon('short')">
-    <span>🔴 SHORTS <span id="contador-short"></span></span>
-    <span class="flecha">▼</span>
-  </div>
-  <div class="acordeon-contenido" id="contenido-short">
-    <div id="tokens-short"><div class="vacio">Cargando...</div></div>
-  </div>
+  <div id="contenedor-fechas"><div class="vacio">Cargando...</div></div>
 
   <footer>
     <a class="contacto-item" href="https://t.me/BullsandBearsIA" target="_blank">
-      <span class="contacto-icono">📩</span>
+      <span class="contacto-icono">✈️</span>
       Telegram
     </a>
     <a class="contacto-item" href="mailto:botsignaltg@gmail.com">
-      <span class="contacto-icono">✉️</span>
-      Correo
+      <span class="contacto-icono">📧</span>
+      Gmail
     </a>
   </footer>
 
@@ -127,9 +140,18 @@
     const COMISION_PCT = 0.1;
     const FUNDING_PCT_POR_CORTE = 0.01;
 
-    function toggleAcordeon(tipo) {
-      document.getElementById(`header-${tipo}`).classList.toggle('abierto');
-      document.getElementById(`contenido-${tipo}`).classList.toggle('abierto');
+    function toggleMenu() {
+      document.getElementById('menu-panel').classList.toggle('abierto');
+    }
+
+    function toggleFecha(id) {
+      document.getElementById(`fc-${id}`).classList.toggle('abierto');
+      document.getElementById(`ff-${id}`).classList.toggle('abierto');
+    }
+
+    function toggleAcordeon(id) {
+      document.getElementById(`header-${id}`).classList.toggle('abierto');
+      document.getElementById(`contenido-${id}`).classList.toggle('abierto');
     }
 
     function toggleToken(id) {
@@ -157,134 +179,151 @@
       return Math.floor(duracionMin / 480);
     }
 
+    function calcularMontos(lista) {
+      let saldoActual = CAPITAL_INICIAL;
+      const montoPorSenal = new Map();
+      lista.forEach((s) => {
+        const monto = Math.min(100, saldoActual);
+        montoPorSenal.set(s, monto);
+        if (s.estado !== "Abierto" && s.return_pct != null) {
+          const comisionUSD = monto * (COMISION_PCT / 100);
+          const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
+          const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
+          const gananciaNeta = monto * (s.return_pct / 100) - comisionUSD - fundingUSD;
+          saldoActual += gananciaNeta;
+        }
+      });
+      return { montoPorSenal, gananciaTotal: saldoActual - CAPITAL_INICIAL };
+    }
+
+    function filaSenal(s, monto, tipo) {
+      const badge = tipo === "LONG" ? `<span class="badge-b">B</span>` : `<span class="badge-s">S</span>`;
+      const impulsoTxt = s.impulso != null ? `${s.impulso > 0 ? "+" : ""}${s.impulso}%` : "-";
+      const rsiTxt = s.rsi != null ? s.rsi : "-";
+      let resultadoHtml, gananciaHtml, salidaTxt, duracionTxt, comisionTxt, fundingTxt;
+
+      if (s.estado === "Abierto") {
+        resultadoHtml = `<span class="abierto-badge">🟡 Abierto</span>`;
+        gananciaHtml = "-"; salidaTxt = "-"; duracionTxt = "-"; comisionTxt = "-"; fundingTxt = "-";
+      } else {
+        const comisionUSD = monto * (COMISION_PCT / 100);
+        const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
+        const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
+        const gananciaNeta = monto * (s.return_pct / 100) - comisionUSD - fundingUSD;
+        const clase = s.resultado === "TP" ? "tp" : "sl";
+        const signoG = gananciaNeta >= 0 ? "+" : "";
+        resultadoHtml = `<span class="${clase}">${s.resultado === "TP" ? "✅ TP" : "❌ SL"} (${s.return_pct >= 0 ? "+" : ""}${s.return_pct}%)</span>`;
+        gananciaHtml = `<span class="${gananciaNeta >= 0 ? 'tp' : 'sl'}">${signoG}$${gananciaNeta.toFixed(2)}</span>`;
+        salidaTxt = s.salida ?? "-";
+        duracionTxt = s.duracion ?? "-";
+        comisionTxt = `$${comisionUSD.toFixed(2)}`;
+        fundingTxt = cortes > 0 ? `$${fundingUSD.toFixed(2)}*` : "$0.00";
+      }
+
+      return `<tr>
+        <td>$${monto.toFixed(2)}</td>
+        <td>${badge} ${s.entrada}</td>
+        <td>${impulsoTxt}</td>
+        <td>${rsiTxt}</td>
+        <td>${salidaTxt}</td>
+        <td>${resultadoHtml}</td>
+        <td>${duracionTxt}</td>
+        <td>${comisionTxt}</td>
+        <td>${fundingTxt}</td>
+        <td>${gananciaHtml}</td>
+      </tr>`;
+    }
+
+    function renderTablaTipo(lista, tipo, montoPorSenal, idPrefix) {
+      const grupos = {};
+      lista.forEach(s => {
+        if (!grupos[s.par]) grupos[s.par] = [];
+        grupos[s.par].push(s);
+      });
+      const pares = ordenarPares(Object.keys(grupos));
+      let html = "";
+      pares.forEach(par => {
+        const senalesToken = grupos[par];
+        let gananciaToken = 0;
+        senalesToken.forEach(s => {
+          if (s.estado !== "Abierto" && s.return_pct != null) {
+            const monto = montoPorSenal.get(s);
+            const comisionUSD = monto * (COMISION_PCT / 100);
+            const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
+            const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
+            gananciaToken += monto * (s.return_pct / 100) - comisionUSD - fundingUSD;
+          }
+        });
+        const tokenId = `${idPrefix}-${par}`.replace(/[^a-zA-Z0-9]/g, '_');
+        const signoTotal = gananciaToken >= 0 ? "+" : "";
+        const claseTotal = gananciaToken >= 0 ? "positivo" : "negativo";
+        const filas = senalesToken.map(s => filaSenal(s, montoPorSenal.get(s), tipo)).join("");
+
+        html += `
+          <div class="token-header" onclick="toggleToken('${tokenId}')">
+            <span class="token-nombre">${par} (${senalesToken.length} señal${senalesToken.length > 1 ? "es" : ""})</span>
+            <span>
+              <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
+              <span class="token-flecha" id="flecha-${tokenId}">▼</span>
+            </span>
+          </div>
+          <div class="token-tabla-wrap" id="wrap-${tokenId}">
+            <table>
+              <thead><tr>
+                <th>Inversión</th><th>Entrada</th><th>Impulso</th><th>RSI</th>
+                <th>Salida</th><th>Resultado</th><th>Duración</th><th>Comisión</th><th>Funding*</th><th>Ganancia</th>
+              </tr></thead>
+              <tbody>${filas}</tbody>
+            </table>
+          </div>`;
+      });
+      return html;
+    }
+
     function cargarDatos() {
       fetch(URL_DATOS + "?t=" + Date.now())
         .then(res => res.json())
         .then(datos => {
+          const longsAll = datos.filter(s => s.tipo === "LONG");
+          const shortsAll = datos.filter(s => s.tipo === "SHORT");
+          const { montoPorSenal: montoLong, gananciaTotal: gLong } = calcularMontos(longsAll);
+          const { montoPorSenal: montoShort, gananciaTotal: gShort } = calcularMontos(shortsAll);
 
-          function renderTipo(tipo, contenedorId, contadorId) {
-            const grupos = {};
-            const ordenCronologico = datos.filter(s => s.tipo === tipo);
+          const fechas = [...new Set(datos.map(s => s.fecha || "Sin fecha"))].sort().reverse();
+          const contenedor = document.getElementById("contenedor-fechas");
 
-            document.getElementById(contadorId).textContent = `(${ordenCronologico.length} señales)`;
-
-            ordenCronologico.forEach(s => {
-              if (!grupos[s.par]) grupos[s.par] = [];
-              grupos[s.par].push(s);
-            });
-
-            const contenedor = document.getElementById(contenedorId);
-            let pares = ordenarPares(Object.keys(grupos));
-
-            if (pares.length === 0) {
-              contenedor.innerHTML = "<div class='vacio'>Sin señales todavía</div>";
-              return 0;
-            }
-
-            let saldoActual = CAPITAL_INICIAL;
-            const montoPorSenal = {};
-            ordenCronologico.forEach((s, idx) => {
-              const monto = Math.min(100, saldoActual);
-              montoPorSenal[idx] = monto;
-              if (s.estado !== "Abierto" && s.return_pct != null) {
-                const comisionUSD = monto * (COMISION_PCT / 100);
-                const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
-                const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
-                const gananciaBruta = monto * (s.return_pct / 100);
-                const gananciaNeta = gananciaBruta - comisionUSD - fundingUSD;
-                saldoActual += gananciaNeta;
-              }
-            });
-
+          if (fechas.length === 0 || (fechas.length === 1 && fechas[0] === "Sin fecha" && datos.length === 0)) {
+            contenedor.innerHTML = "<div class='vacio'>Sin señales todavía</div>";
+          } else {
             let html = "";
-            const mapaIdx = new Map(ordenCronologico.map((s, i) => [s, i]));
-
-            pares.forEach(par => {
-              const lista = grupos[par];
-              let gananciaToken = 0;
-              const tokenId = `${tipo}-${par}`.replace(/[^a-zA-Z0-9]/g, '_');
-
-              let filas = "";
-              lista.forEach(s => {
-                const idx = mapaIdx.get(s);
-                const monto = montoPorSenal[idx];
-                const badge = tipo === "LONG"
-                  ? `<span class="badge-b">B</span>`
-                  : `<span class="badge-s">S</span>`;
-                const impulsoTxt = s.impulso != null ? `${s.impulso > 0 ? "+" : ""}${s.impulso}%` : "-";
-                const rsiTxt = s.rsi != null ? s.rsi : "-";
-
-                let resultadoHtml, gananciaHtml, salidaTxt, duracionTxt, comisionTxt, fundingTxt;
-
-                if (s.estado === "Abierto") {
-                  resultadoHtml = `<span class="abierto-badge">🟡 Abierto</span>`;
-                  gananciaHtml = "-";
-                  salidaTxt = "-";
-                  duracionTxt = "-";
-                  comisionTxt = "-";
-                  fundingTxt = "-";
-                } else {
-                  const comisionUSD = monto * (COMISION_PCT / 100);
-                  const cortes = contarCortesFunding(parseDuracionMinutos(s.duracion));
-                  const fundingUSD = monto * (FUNDING_PCT_POR_CORTE / 100) * cortes;
-                  const gananciaBruta = monto * (s.return_pct / 100);
-                  const gananciaNeta = gananciaBruta - comisionUSD - fundingUSD;
-                  gananciaToken += gananciaNeta;
-                  const clase = s.resultado === "TP" ? "tp" : "sl";
-                  const signoG = gananciaNeta >= 0 ? "+" : "";
-                  resultadoHtml = `<span class="${clase}">${s.resultado === "TP" ? "✅ TP" : "❌ SL"} (${s.return_pct >= 0 ? "+" : ""}${s.return_pct}%)</span>`;
-                  gananciaHtml = `<span class="${gananciaNeta >= 0 ? 'tp' : 'sl'}">${signoG}$${gananciaNeta.toFixed(2)}</span>`;
-                  salidaTxt = s.salida ?? "-";
-                  duracionTxt = s.duracion ?? "-";
-                  comisionTxt = `$${comisionUSD.toFixed(2)}`;
-                  fundingTxt = cortes > 0 ? `$${fundingUSD.toFixed(2)}*` : "$0.00";
-                }
-
-                filas += `
-                  <tr>
-                    <td>$${monto.toFixed(2)}</td>
-                    <td>${badge} ${s.entrada}</td>
-                    <td>${impulsoTxt}</td>
-                    <td>${rsiTxt}</td>
-                    <td>${salidaTxt}</td>
-                    <td>${resultadoHtml}</td>
-                    <td>${duracionTxt}</td>
-                    <td>${comisionTxt}</td>
-                    <td>${fundingTxt}</td>
-                    <td>${gananciaHtml}</td>
-                  </tr>`;
-              });
-
-              const signoTotal = gananciaToken >= 0 ? "+" : "";
-              const claseTotal = gananciaToken >= 0 ? "positivo" : "negativo";
+            fechas.forEach((fecha, i) => {
+              const longsFecha = longsAll.filter(s => (s.fecha || "Sin fecha") === fecha);
+              const shortsFecha = shortsAll.filter(s => (s.fecha || "Sin fecha") === fecha);
+              const total = longsFecha.length + shortsFecha.length;
+              const fid = `fecha${i}`;
 
               html += `
-                <div class="token-header" onclick="toggleToken('${tokenId}')">
-                  <span class="token-nombre">${par} (${lista.length} señal${lista.length > 1 ? "es" : ""})</span>
-                  <span>
-                    <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
-                    <span class="token-flecha" id="flecha-${tokenId}">▼</span>
-                  </span>
+                <div class="fecha-header" onclick="toggleFecha('${fid}')">
+                  <span>📅 ${fecha} (${total} señales)</span>
+                  <span class="fecha-flecha" id="ff-${fid}">▼</span>
                 </div>
-                <div class="token-tabla-wrap" id="wrap-${tokenId}">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Inversión</th><th>Entrada</th><th>Impulso</th><th>RSI</th>
-                        <th>Salida</th><th>Resultado</th><th>Duración</th><th>Comisión</th><th>Funding*</th><th>Ganancia</th>
-                      </tr>
-                    </thead>
-                    <tbody>${filas}</tbody>
-                  </table>
+                <div class="fecha-contenido" id="fc-${fid}">
+                  <div class="acordeon-header long" id="header-L${fid}" onclick="toggleAcordeon('L${fid}')">
+                    <span>↑ LONGS (${longsFecha.length})</span><span class="flecha">▼</span>
+                  </div>
+                  <div class="acordeon-contenido" id="contenido-L${fid}">
+                    ${longsFecha.length ? renderTablaTipo(longsFecha, "LONG", montoLong, `L${fid}`) : "<div class='vacio'>Sin señales</div>"}
+                  </div>
+                  <div class="acordeon-header short" id="header-S${fid}" onclick="toggleAcordeon('S${fid}')">
+                    <span>↓ SHORTS (${shortsFecha.length})</span><span class="flecha">▼</span>
+                  </div>
+                  <div class="acordeon-contenido" id="contenido-S${fid}">
+                    ${shortsFecha.length ? renderTablaTipo(shortsFecha, "SHORT", montoShort, `S${fid}`) : "<div class='vacio'>Sin señales</div>"}
+                  </div>
                 </div>`;
             });
-
             contenedor.innerHTML = html;
-            return saldoActual - CAPITAL_INICIAL;
           }
-
-          const gananciaLong = renderTipo("LONG", "tokens-long", "contador-long");
-          const gananciaShort = renderTipo("SHORT", "tokens-short", "contador-short");
 
           function pintar(id, valor) {
             const el = document.getElementById(id);
@@ -292,9 +331,9 @@
             el.textContent = `${signo}$${valor.toFixed(2)}`;
             el.className = "monto " + (valor >= 0 ? "positivo" : "negativo");
           }
-          pintar("capital-long", gananciaLong);
-          pintar("capital-short", gananciaShort);
-          pintar("capital-total", gananciaLong + gananciaShort);
+          pintar("capital-long", gLong);
+          pintar("capital-short", gShort);
+          pintar("capital-total", gLong + gShort);
 
           const ahora = new Date();
           document.getElementById("ultima-actualizacion").textContent =

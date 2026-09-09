@@ -10,6 +10,7 @@
   .b-verde { color:#3fb950; }
   .b-roja { color:#f85149; }
   .resto-titulo { color:#ffffff; }
+  .marca-bb { display:inline-flex; }
   .menu-btn {
     margin-left:auto; background:#21262d; border:1px solid #30363d; color:#e6edf3;
     border-radius:6px; padding:6px 12px; font-size:0.7em; cursor:pointer;
@@ -31,7 +32,7 @@
   .capital-col .monto { font-size:1.5em; font-weight:bold; margin-top:4px; }
   .positivo { color:#3fb950; }
   .negativo { color:#f85149; }
-  .aviso { font-size:0.78em; color:#ffffff; margin-top:12px; text-align:center; line-height:1.6; }
+  .aviso { font-size:0.78em; color:#ffffff; margin-top:12px; text-align:left; line-height:1.7; padding:0 10px; }
   .marca { font-size:0.8em; color:#ffffff; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:0.5px; }
   .refrescar-btn {
     display:block; margin:10px auto 0; background:#21262d; border:1px solid #30363d; color:#e6edf3;
@@ -82,7 +83,6 @@
     margin-top:30px; background:#161b22; border:1px solid #30363d; border-radius:10px; padding:18px;
   }
   .roadmap-box h3 { margin:0 0 10px 0; color:#58a6ff; }
-  .roadmap-box ul { margin:0; padding-left:20px; color:#ffffff; font-size:0.85em; line-height:1.8; }
   footer {
     margin-top:30px; padding:18px; background-color:#161b22; border-radius:10px;
     display:flex; justify-content:center; gap:30px; flex-wrap:wrap;
@@ -103,7 +103,7 @@
 </head>
 <body>
   <h1>
-    🎯 <span class="b-verde">B</span><span class="resto-titulo">&</span><span class="b-roja">B</span><span class="resto-titulo"> AI - DASHBOARD</span>
+    🎯 <span class="marca-bb"><span class="b-verde">B</span><span class="resto-titulo">&</span><span class="b-roja">B</span></span><span class="resto-titulo"> AI - DASHBOARD</span>
     <button class="menu-btn" onclick="toggleMenu()">☰</button>
   </h1>
 
@@ -138,7 +138,7 @@
         <div class="monto" id="capital-total">Cargando...</div>
       </div>
     </div>
-    <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT · $100 por señal (o saldo disponible)<br>Comisión real Binance 0.05%+0.05% + funding estimado · No representa dinero real</div>
+    <div class="aviso">• Simulación: $3,000 LONG + $3,000 SHORT<br>• $100 por señal (o saldo disponible tras pérdida)<br>• Comisión real Binance: 0.05% + 0.05%<br>• Incluye funding estimado<br>• No representa dinero real</div>
     <div class="marca">B&B AI INTELLIGENCE — TRADING SIGNALS</div>
     <div class="actualizado" id="ultima-actualizacion"></div>
     <button class="refrescar-btn" onclick="cargarDatos()">🔄 Actualizar</button>
@@ -163,13 +163,16 @@
   </div>
 
   <div class="roadmap-box">
-    <h3>🗺️ Roadmap</h3>
-    <ul>
-      <li>Comandos interactivos del bot de Telegram (/start, /dashboard, /canal)</li>
-      <li>Backtesting histórico sobre ~526 contratos y 3 años de datos</li>
-      <li>Buscador de tokens dentro del dashboard</li>
-      <li>Optimización de filtros de entrada (RSI, impulso, cooldown anti-duplicados)</li>
-    </ul>
+    <h3>🗺️ Nuestra historia</h3>
+    <p style="color:#ffffff; font-size:0.85em; line-height:1.6; margin:0 0 12px 0;">
+      Nacimos para demostrar que la inteligencia artificial puede analizar el mercado con disciplina,
+      datos y transparencia, convirtiendo el ruido en señales medibles y mejorables.
+    </p>
+    <p style="color:#8b949e; font-size:0.8em; line-height:1.6; margin:0;">
+      Nuestros bots monitorean el mercado de futuros de Binance las 24 horas, detectando oportunidades
+      LONG y SHORT bajo reglas fijas y objetivas — sin emociones, sin improvisar. Cada señal que ves
+      aquí es real y queda registrada, gane o pierda, para que todo el proceso sea 100% verificable.
+    </p>
   </div>
 
   <footer>

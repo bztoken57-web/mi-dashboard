@@ -19,8 +19,8 @@
     padding:14px; margin-top:8px; font-size:0.85em;
   }
   .menu-panel.abierto { display:block; }
-  .menu-panel a { color:#e6edf3; text-decoration:none; display:flex; align-items:center; gap:8px; margin:10px 0; }
-  .menu-panel img { width:22px; height:22px; border-radius:4px; }
+  .menu-panel a { color:#ffffff; text-decoration:none; display:flex; align-items:center; gap:8px; margin:10px 0; }
+  .menu-panel img { width:22px; height:22px; border-radius:50%; }
   .capital-box {
     background:linear-gradient(135deg,#161b22,#1c2333);
     border:1px solid #30363d; border-radius:10px; padding:18px; margin:15px 0;
@@ -31,8 +31,8 @@
   .capital-col .monto { font-size:1.5em; font-weight:bold; margin-top:4px; }
   .positivo { color:#3fb950; }
   .negativo { color:#f85149; }
-  .aviso { font-size:0.75em; color:#ffffff; margin-top:10px; text-align:center; line-height:1.5; }
-  .marca { font-size:0.8em; color:#8b949e; text-align:center; margin-top:4px; letter-spacing:0.5px; }
+  .aviso { font-size:0.78em; color:#ffffff; margin-top:12px; text-align:center; line-height:1.6; }
+  .marca { font-size:0.8em; color:#ffffff; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:0.5px; }
   .refrescar-btn {
     display:block; margin:10px auto 0; background:#21262d; border:1px solid #30363d; color:#e6edf3;
     border-radius:6px; padding:5px 12px; font-size:0.75em; cursor:pointer;
@@ -47,6 +47,10 @@
   .acordeon-header.abierto .flecha { transform: rotate(180deg); }
   .acordeon-contenido { display:none; }
   .acordeon-contenido.abierto { display:block; }
+  .linea-pendiente {
+    background:#3a2f00; color:#d29922; padding:7px 14px; border-radius:6px;
+    margin-top:6px; font-size:0.8em; font-weight:bold; display:flex; align-items:center; gap:6px;
+  }
   .fecha-header {
     margin-top:14px; padding:7px 12px; border-radius:6px; background:#1c2333;
     color:#58a6ff; font-weight:bold; font-size:0.85em; cursor:pointer;
@@ -74,8 +78,13 @@
   .abierto-badge { color:#0d1117; background:#d29922; font-weight:bold; border-radius:4px; padding:2px 6px; }
   .badge-b { background:#3fb950; color:#0d1117; border-radius:4px; padding:1px 5px; font-weight:bold; font-size:0.9em; }
   .badge-s { background:#f85149; color:#0d1117; border-radius:4px; padding:1px 5px; font-weight:bold; font-size:0.9em; }
+  .roadmap-box {
+    margin-top:30px; background:#161b22; border:1px solid #30363d; border-radius:10px; padding:18px;
+  }
+  .roadmap-box h3 { margin:0 0 10px 0; color:#58a6ff; }
+  .roadmap-box ul { margin:0; padding-left:20px; color:#ffffff; font-size:0.85em; line-height:1.8; }
   footer {
-    margin-top:40px; padding:18px; background-color:#161b22; border-radius:10px;
+    margin-top:30px; padding:18px; background-color:#161b22; border-radius:10px;
     display:flex; justify-content:center; gap:30px; flex-wrap:wrap;
   }
   .contacto-item {
@@ -94,16 +103,16 @@
 </head>
 <body>
   <h1>
-    🎯 <span class="b-verde">B</span><span class="resto-titulo">&</span><span class="b-roja">B</span><span class="resto-titulo"> AI - Dashboard</span>
+    🎯 <span class="b-verde">B</span><span class="resto-titulo">&</span><span class="b-roja">B</span><span class="resto-titulo"> AI - DASHBOARD</span>
     <button class="menu-btn" onclick="toggleMenu()">☰</button>
   </h1>
 
   <div class="menu-panel" id="menu-panel">
     <a href="https://app.binance.com/uni-qr/cpro/BULLZEYE?l=es&r=JMKPMXPB&uc=app_square_share_link&us=copylink" target="_blank">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Binance_Logo.png/240px-Binance_Logo.png" alt="Binance">
+      <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png" alt="Binance">
       Síguenos en Binance
     </a>
-    <a href="https://t.me/Bot_Bull_Bot?start=welcome" target="_blank">
+    <a href="https://t.me/Bot_Bull_Bot" target="_blank">
       <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
       Abrir nuestro bot de Telegram
     </a>
@@ -130,7 +139,7 @@
       </div>
     </div>
     <div class="aviso">Simulación: $3,000 LONG + $3,000 SHORT · $100 por señal (o saldo disponible)<br>Comisión real Binance 0.05%+0.05% + funding estimado · No representa dinero real</div>
-    <div class="marca">B&B AI Intelligence — Trading Signals</div>
+    <div class="marca">B&B AI INTELLIGENCE — TRADING SIGNALS</div>
     <div class="actualizado" id="ultima-actualizacion"></div>
     <button class="refrescar-btn" onclick="cargarDatos()">🔄 Actualizar</button>
   </div>
@@ -140,6 +149,7 @@
     <span class="flecha">▼</span>
   </div>
   <div class="acordeon-contenido" id="contenido-long">
+    <div id="pendiente-long"></div>
     <div id="fechas-long"><div class="vacio">Cargando...</div></div>
   </div>
 
@@ -148,11 +158,22 @@
     <span class="flecha">▼</span>
   </div>
   <div class="acordeon-contenido" id="contenido-short">
+    <div id="pendiente-short"></div>
     <div id="fechas-short"><div class="vacio">Cargando...</div></div>
   </div>
 
+  <div class="roadmap-box">
+    <h3>🗺️ Roadmap</h3>
+    <ul>
+      <li>Comandos interactivos del bot de Telegram (/start, /dashboard, /canal)</li>
+      <li>Backtesting histórico sobre ~526 contratos y 3 años de datos</li>
+      <li>Buscador de tokens dentro del dashboard</li>
+      <li>Optimización de filtros de entrada (RSI, impulso, cooldown anti-duplicados)</li>
+    </ul>
+  </div>
+
   <footer>
-    <a class="contacto-item" href="https://t.me/Bot_Bull_Bot?start=welcome" target="_blank">
+    <a class="contacto-item" href="https://t.me/Bot_Bull_Bot" target="_blank">
       <span class="contacto-icono"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram"></span>
       Telegram
     </a>
@@ -161,7 +182,7 @@
       Gmail
     </a>
     <a class="contacto-item" href="https://app.binance.com/uni-qr/cpro/BULLZEYE?l=es&r=JMKPMXPB&uc=app_square_share_link&us=copylink" target="_blank">
-      <span class="contacto-icono"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Binance_Logo.png/240px-Binance_Logo.png" alt="Binance"></span>
+      <span class="contacto-icono"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png" alt="Binance"></span>
       Binance
     </a>
   </footer>
@@ -172,18 +193,24 @@
     const COMISION_PCT = 0.1;
     const FUNDING_PCT_POR_CORTE = 0.01;
 
+    const estadoAbiertos = { menu: false, acordeones: {}, fechas: {}, tokens: {} };
+
     function toggleMenu() {
+      estadoAbiertos.menu = !estadoAbiertos.menu;
       document.getElementById('menu-panel').classList.toggle('abierto');
     }
     function toggleAcordeon(id) {
+      estadoAbiertos.acordeones[id] = !estadoAbiertos.acordeones[id];
       document.getElementById(`header-${id}`).classList.toggle('abierto');
       document.getElementById(`contenido-${id}`).classList.toggle('abierto');
     }
     function toggleFecha(id) {
+      estadoAbiertos.fechas[id] = !estadoAbiertos.fechas[id];
       document.getElementById(`fc-${id}`).classList.toggle('abierto');
       document.getElementById(`ff-${id}`).classList.toggle('abierto');
     }
     function toggleToken(id) {
+      estadoAbiertos.tokens[id] = !estadoAbiertos.tokens[id];
       document.getElementById(`wrap-${id}`).classList.toggle('abierto');
       document.getElementById(`flecha-${id}`).classList.toggle('abierto');
     }
@@ -286,16 +313,17 @@
         const signoTotal = gananciaToken >= 0 ? "+" : "";
         const claseTotal = gananciaToken >= 0 ? "positivo" : "negativo";
         const filas = senalesToken.map(s => filaSenal(s, montoPorSenal.get(s), tipo)).join("");
+        const abiertoClase = estadoAbiertos.tokens[tokenId] ? "abierto" : "";
 
         html += `
           <div class="token-header" onclick="toggleToken('${tokenId}')">
             <span class="token-nombre">${par} (${senalesToken.length} señal${senalesToken.length > 1 ? "es" : ""})</span>
             <span>
               <span class="${claseTotal}">${signoTotal}$${gananciaToken.toFixed(2)}</span>
-              <span class="token-flecha" id="flecha-${tokenId}">▼</span>
+              <span class="token-flecha ${abiertoClase}" id="flecha-${tokenId}">▼</span>
             </span>
           </div>
-          <div class="token-tabla-wrap" id="wrap-${tokenId}">
+          <div class="token-tabla-wrap ${abiertoClase}" id="wrap-${tokenId}">
             <table>
               <thead><tr>
                 <th>Inversión</th><th>Entrada</th><th>Impulso</th><th>RSI</th>
@@ -319,16 +347,27 @@
       fechas.forEach((fecha, i) => {
         const senalesFecha = lista.filter(s => (s.fecha || "Sin fecha") === fecha);
         const fid = `${idPrefix}-f${i}`;
+        const abiertoClase = estadoAbiertos.fechas[fid] ? "abierto" : "";
         html += `
           <div class="fecha-header" onclick="toggleFecha('${fid}')">
             <span>📅 ${fecha} (${senalesFecha.length} señales)</span>
-            <span class="fecha-flecha" id="ff-${fid}">▼</span>
+            <span class="fecha-flecha ${abiertoClase}" id="ff-${fid}">▼</span>
           </div>
-          <div class="fecha-contenido" id="fc-${fid}">
+          <div class="fecha-contenido ${abiertoClase}" id="fc-${fid}">
             ${renderTokens(senalesFecha, tipo, montoPorSenal, fid)}
           </div>`;
       });
       contenedor.innerHTML = html;
+    }
+
+    function renderPendiente(lista, contenedorId) {
+      const abiertas = lista.filter(s => s.estado === "Abierto");
+      const el = document.getElementById(contenedorId);
+      if (abiertas.length === 0) {
+        el.innerHTML = "";
+      } else {
+        el.innerHTML = `<div class="linea-pendiente">🟡 ${abiertas.length} señal${abiertas.length > 1 ? "es" : ""} pendiente${abiertas.length > 1 ? "s" : ""} / abierta${abiertas.length > 1 ? "s" : ""}: ${abiertas.map(s => s.par).join(", ")}</div>`;
+      }
     }
 
     function cargarDatos() {
@@ -343,8 +382,23 @@
           document.getElementById("contador-long").textContent = `(${longsAll.length} señales)`;
           document.getElementById("contador-short").textContent = `(${shortsAll.length} señales)`;
 
+          renderPendiente(longsAll, "pendiente-long");
+          renderPendiente(shortsAll, "pendiente-short");
+
           renderPorFecha(longsAll, "LONG", montoLong, "fechas-long", "L");
           renderPorFecha(shortsAll, "SHORT", montoShort, "fechas-short", "S");
+
+          if (estadoAbiertos.acordeones['long']) {
+            document.getElementById('header-long').classList.add('abierto');
+            document.getElementById('contenido-long').classList.add('abierto');
+          }
+          if (estadoAbiertos.acordeones['short']) {
+            document.getElementById('header-short').classList.add('abierto');
+            document.getElementById('contenido-short').classList.add('abierto');
+          }
+          if (estadoAbiertos.menu) {
+            document.getElementById('menu-panel').classList.add('abierto');
+          }
 
           function pintar(id, valor) {
             const el = document.getElementById(id);
@@ -369,4 +423,4 @@
     setInterval(cargarDatos, 30000);
   </script>
 </body>
-      </html>
+</html>

@@ -227,21 +227,39 @@
       document.getElementById(`flecha-${id}`).classList.toggle('abierto');
     }
 
-    function filtrarBusqueda(texto) {
+  function filtrarBusqueda(texto) {
       const filtro = texto.trim().toUpperCase();
+
+      if (filtro === "") {
+        document.querySelectorAll('.token-header, .fecha-header').forEach(el => el.style.display = "");
+        return;
+      }
+
+      document.getElementById('header-long').classList.add('abierto');
+      document.getElementById('contenido-long').classList.add('abierto');
+      document.getElementById('header-short').classList.add('abierto');
+      document.getElementById('contenido-short').classList.add('abierto');
+
+      document.querySelectorAll('.fecha-header').forEach(fh => {
+        fh.classList.add('abierto');
+        const contenedorFecha = fh.nextElementSibling;
+        if (contenedorFecha) contenedorFecha.classList.add('abierto');
+      });
+
       document.querySelectorAll('.token-header').forEach(header => {
         const nombre = header.querySelector('.token-nombre').textContent.toUpperCase();
-        if (filtro === "" || nombre.includes(filtro)) {
-          header.style.display = "";
-        } else {
-          header.style.display = "none";
-        }
+        const coincide = nombre.includes(filtro);
+        header.style.display = coincide ? "" : "none";
+        const wrapId = header.getAttribute('onclick').match(/toggleToken\('(.+)'\)/)[1];
+        const wrap = document.getElementById(`wrap-${wrapId}`);
+        if (coincide && wrap) wrap.classList.add('abierto');
       });
+
       document.querySelectorAll('.fecha-header').forEach(fh => {
         const contenedorFecha = fh.nextElementSibling;
         if (!contenedorFecha) return;
-        const headersVisibles = contenedorFecha.querySelectorAll(".token-header:not([style*='display: none'])");
-        fh.style.display = (filtro !== "" && headersVisibles.length === 0) ? "none" : "";
+        const visibles = [...contenedorFecha.querySelectorAll(".token-header")].filter(h => h.style.display !== "none");
+        fh.style.display = visibles.length === 0 ? "none" : "";
       });
     }
 

@@ -38,6 +38,11 @@
     display:block; margin:10px auto 0; background:#21262d; border:1px solid #30363d; color:#e6edf3;
     border-radius:6px; padding:5px 12px; font-size:0.75em; cursor:pointer;
   }
+  .buscador-box { margin-top:20px; }
+  .buscador-box input {
+    width:100%; padding:10px; border-radius:8px; border:1px solid #30363d;
+    background:#161b22; color:#e6edf3; font-size:0.9em; box-sizing:border-box;
+  }
   .acordeon-header {
     display:flex; justify-content:space-between; align-items:center;
     padding:10px 14px; border-radius:8px; margin-top:20px; cursor:pointer;
@@ -112,7 +117,7 @@
       <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png" alt="Binance">
       Síguenos en Binance
     </a>
-    <a href="https://t.me/Bot_Bull_Bot?start=welcome" target="_blank">
+    <a href="https://t.me/Bot_Bull_Bot" target="_blank">
       <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
       Abrir nuestro bot de Telegram
     </a>
@@ -142,6 +147,10 @@
     <div class="marca">B&B AI INTELLIGENCE — TRADING SIGNALS</div>
     <div class="actualizado" id="ultima-actualizacion"></div>
     <button class="refrescar-btn" onclick="cargarDatos()">🔄 Actualizar</button>
+  </div>
+
+  <div class="buscador-box">
+    <input type="text" id="buscador" placeholder="🔍 Buscar token (ej: BTCUSDT)" oninput="filtrarBusqueda(this.value)">
   </div>
 
   <div class="acordeon-header long" id="header-long" onclick="toggleAcordeon('long')">
@@ -176,7 +185,7 @@
   </div>
 
   <footer>
-    <a class="contacto-item" href="https://t.me/Bot_Bull_Bot?start=welcome" target="_blank">
+    <a class="contacto-item" href="https://t.me/Bot_Bull_Bot" target="_blank">
       <span class="contacto-icono"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram"></span>
       Telegram
     </a>
@@ -216,6 +225,24 @@
       estadoAbiertos.tokens[id] = !estadoAbiertos.tokens[id];
       document.getElementById(`wrap-${id}`).classList.toggle('abierto');
       document.getElementById(`flecha-${id}`).classList.toggle('abierto');
+    }
+
+    function filtrarBusqueda(texto) {
+      const filtro = texto.trim().toUpperCase();
+      document.querySelectorAll('.token-header').forEach(header => {
+        const nombre = header.querySelector('.token-nombre').textContent.toUpperCase();
+        if (filtro === "" || nombre.includes(filtro)) {
+          header.style.display = "";
+        } else {
+          header.style.display = "none";
+        }
+      });
+      document.querySelectorAll('.fecha-header').forEach(fh => {
+        const contenedorFecha = fh.nextElementSibling;
+        if (!contenedorFecha) return;
+        const headersVisibles = contenedorFecha.querySelectorAll(".token-header:not([style*='display: none'])");
+        fh.style.display = (filtro !== "" && headersVisibles.length === 0) ? "none" : "";
+      });
     }
 
     function ordenarPares(pares) {
@@ -416,6 +443,9 @@
           const ahora = new Date();
           document.getElementById("ultima-actualizacion").textContent =
             `Última actualización: ${ahora.toLocaleTimeString('es-CO')} — *Funding estimado (0.01% por corte de 8h)`;
+
+          const buscador = document.getElementById('buscador');
+          if (buscador.value) filtrarBusqueda(buscador.value);
         })
         .catch(() => {
           document.getElementById("capital-total").textContent = "Error cargando datos";
